@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RangStep | Walk Your Style</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:#242321;background:#faf9f6}
+header{background:#fff;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;position:sticky;top:0;z-index:5}
+.logo{font-size:27px;font-weight:900;letter-spacing:-1px}
+.logo span{color:#ad6747}
+nav{display:flex;gap:22px;font-size:14px}
+button{cursor:pointer;border:0;padding:12px 18px;background:#ad6747;color:white;font-weight:bold;border-radius:4px}
+.hero{background:#e9ded2;min-height:390px;padding:65px 8%;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hero h1{font-size:clamp(38px,6vw,65px);margin:12px 0;line-height:1}
+.hero p{color:#64584e;line-height:1.7}
+.hero-art{font-size:125px}
+.section{padding:38px 6%}
+.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h2{font-size:27px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button{background:white;color:#333;border:1px solid #ddd}
+.filters button.active{background:#ad6747;color:white}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:white;border:1px solid #eee;padding:12px}
+.photo{height:180px;background:#f0e9e3;display:grid;place-items:center;font-size:85px}
+.card h3{font-size:16px}
+.card p{color:#777;font-size:13px}
+.price{font-size:20px;font-weight:bold;margin:12px 0}
+.old{font-size:13px;text-decoration:line-through;color:#999;margin-left:6px}
+.card select{width:100%;padding:10px;border:1px solid #ddd;margin-bottom:10px}
+.card button{width:100%}
+.cart{background:white;padding:22px;border:1px solid #eee}
+input,textarea{width:100%;padding:13px;border:1px solid #ddd;margin:8px 0 14px;font:inherit}
+footer{background:#252321;color:white;text-align:center;padding:35px}
+@media(max-width:750px){
+nav{display:none}
+.grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.hero{padding:40px 6%}
+.hero-art{font-size:65px}
+.photo{height:130px;font-size:65px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">Rang<span>Step.</span></div>
+<nav>
+<a href="#home">Home</a>
+<a href="#shop">Shop</a>
+<a href="#about">About</a>
+</nav>
+<button onclick="showCart()">🛍 Cart (<span id="count">0</span>)</button>
+</header>
+
+<section class="hero" id="home">
+<div>
+<p>THE NEW FOOTWEAR COLLECTION</p>
+<h1>Walk Your<br>Own Style.</h1>
+<p>Discover footwear that matches your personality.<br>Find your perfect pair at RangStep.</p>
+<button onclick="document.getElementById('shop').scrollIntoView()">SHOP NOW →</button>
+</div>
+<div class="hero-art">👟</div>
+</section>
+
+<section class="section" id="shop">
+<div class="heading">
+<h2>Explore Collection</h2>
+<div class="filters">
+<button class="active" onclick="filter('All',this)">All</button>
+<button onclick="filter('Men',this)">Men</button>
+<button onclick="filter('Women',this)">Women</button>
+<button onclick="filter('Kids',this)">Kids</button>
+</div>
+</div>
+<div class="grid" id="products"></div>
+</section>
+
+<section class="section" id="cartSection" style="display:none">
+<div class="cart">
+<h2>Your Shopping Bag</h2>
+<div id="cartItems"></div>
+<h3 id="total">Total: ₹0</h3>
+<h2>Delivery Information</h2>
+<form onsubmit="placeOrder(event)">
+<input id="name" placeholder="Full Name" required>
+<input id="phone" placeholder="Mobile Number" pattern="[0-9]{10}" required>
+<textarea id="address" placeholder="Full Address" required></textarea>
+<input id="city" placeholder="City" required>
+<input id="pin" placeholder="PIN Code" pattern="[0-9]{6}" required>
+<button type="submit">Place Demo Order</button>
+</form>
+<p style="font-size:12px;color:#888">Demo checkout only. Live payment and order processing are not connected yet.</p>
+</div>
+</section>
+
+<section class="section" id="about">
+<h2>About RangStep</h2>
+<p>RangStep brings together style, comfort and everyday footwear. Find a pair that feels like you.</p>
+</section>
+
+<footer>
+<h2>RangStep.</h2>
+<p>Walk Your Own Style.</p>
+<p>© 2026 RangStep. All rights reserved.</p>
+</footer>
+
+<script>
+const shoes=[
+{name:"Classic White Sneakers",cat:"Men",price:899,emoji:"👟"},
+{name:"Urban Sports Shoes",cat:"Men",price:1199,emoji:"👟"},
+{name:"Casual Walking Shoes",cat:"Men",price:799,emoji:"🥾"},
+{name:"Premium Loafers",cat:"Men",price:1099,emoji:"👞"},
+{name:"Elegant Women's Heels",cat:"Women",price:999,emoji:"👠"},
+{name:"Women's Casual Sneakers",cat:"Women",price:899,emoji:"👟"},
+{name:"Stylish Flats",cat:"Women",price:599,emoji:"🥿"},
+{name:"Women's Sandals",cat:"Women",price:699,emoji:"🩴"},
+{name:"Kids School Shoes",cat:"Kids",price:499,emoji:"👞"},
+{name:"Kids Sneakers",cat:"Kids",price:599,emoji:"👟"},
+{name:"Kids Casual Shoes",cat:"Kids",price:449,emoji:"👟"},
+{name:"Kids Sports Shoes",cat:"Kids",price:699,emoji:"🥾"}
+];
+
+let cart=[];
+
+function display(list=shoes){
+document.getElementById("products").innerHTML=list.map((p)=>{
+let i=shoes.indexOf(p);
+return `<div class="card">
+<div class="photo">${p.emoji}</div>
+<h3>${p.name}</h3>
+<p>${p.cat} Collection</p>
+<div class="price">₹${p.price}</div>
+<select id="size${i}">
+<option value="">Select Size</option>
+${(p.cat==="Kids"?["1","2","3","4","5"]:["5","6","7","8","9","10"]).map(s=>`<option value="${s}">${s}</option>`).join("")}
+</select>
+<button onclick="add(${i})">ADD TO CART</button>
+</div>`;
+}).join("");
+}
+
+function filter(cat,btn){
+document.querySelectorAll(".filters button").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");
+display(cat==="All"?shoes:shoes.filter(p=>p.cat===cat));
+}
+
+function add(i){
+let size=document.getElementById("size"+i).value;
+if(!size){alert("Please select your shoe size.");return;}
+cart.push({...shoes[i],size});
+document.getElementById("count").innerText=cart.length;
+alert("Added to your shopping bag!");
+}
+
+function showCart(){
+document.getElementById("cartSection").style.display="block";
+let total=cart.reduce((s,p)=>s+p.price,0);
+document.getElementById("cartItems").innerHTML=cart.length?
+cart.map((p,i)=>`<p>${p.emoji} ${p.name} | Size ${p.size} | ₹${p.price} <button onclick="removeItem(${i})">Remove</button></p>`).join("")
+:"Your shopping bag is empty.";
+document.getElementById("total").innerText="Total: ₹"+total;
+document.getElementById("cartSection").scrollIntoView({behavior:"smooth"});
+}
+
+function removeItem(i){
+cart.splice(i,1);
+document.getElementById("count").innerText=cart.length;
+showCart();
+}
+
+function placeOrder(e){
+e.preventDefault();
+if(!cart.length){alert("Your cart is empty.");return;}
+alert("Demo order details submitted. No payment was collected and no supplier order was placed.");
+cart=[];
+document.getElementById("count").innerText=0;
+showCart();
+}
+
+display();
+</script>
+</body>
+</html>
